@@ -21,7 +21,7 @@ bl_info = {
     "author" : "Daniel Calderón",
     "description" : "Select Panel",
     "blender" : (2, 80, 0),
-    "version" : (0, 0, 1),
+    "version" : (0, 0, 2),
     "location" : "",
     "warning" : "",
     "category" : "Generic"
@@ -158,17 +158,72 @@ class SelectPanelMesh(View3DPanel, bpy.types.Panel):
         col.operator("mesh.select_mirror")
         col.operator("mesh.ext_deselect_boundary")
         
-        
-        
+class VertexGroups(View3DPanel, bpy.types.Panel):
+    bl_idname = "VIEW3D_PT_test_4"
+    bl_label = "Vertex Groups"
+    bl_context ="mesh_edit"
+
+    @classmethod
+    def poll(cls, context):
+        engine = context.engine
+        obj = context.object
+        return (obj and obj.type in {'MESH', 'LATTICE'} and (engine in cls.COMPAT_ENGINES))
+
+    def draw(self, context):
+        layout = self.layout
+
+        ob = context.object
+        group = ob.vertex_groups.active
+
+        rows = 3
+        if group:
+            rows = 5
+
+        row = layout.row()
+        row.template_list("MESH_UL_vgroups", "", ob, "vertex_groups", ob.vertex_groups, "active_index", rows=rows)
+
+        col = row.column(align=True)
+
+        col.operator("object.vertex_group_add", icon='ADD', text="")
+        props = col.operator("object.vertex_group_remove", icon='REMOVE', text="")
+        props.all_unlocked = props.all = False
+
+        col.separator()
+
+        col.menu("MESH_MT_vertex_group_context_menu", icon='DOWNARROW_HLT', text="")
+
+        if group:
+            col.separator()
+            col.operator("object.vertex_group_move", icon='TRIA_UP', text="").direction = 'UP'
+            col.operator("object.vertex_group_move", icon='TRIA_DOWN', text="").direction = 'DOWN'
+
+        if (
+                ob.vertex_groups and
+                (ob.mode == 'EDIT' or
+                 (ob.mode == 'WEIGHT_PAINT' and ob.type == 'MESH' and ob.data.use_paint_mask_vertex))
+        ):
+            row = layout.row()
+
+            sub = row.row(align=True)
+            sub.operator("object.vertex_group_assign", text="Assign")
+            sub.operator("object.vertex_group_remove_from", text="Remove")
+
+            sub = row.row(align=True)
+            sub.operator("object.vertex_group_select", text="Select")
+            sub.operator("object.vertex_group_deselect", text="Deselect")
+
+            layout.prop(context.tool_settings, "vertex_group_weight", text="Weight")
         
 def register():
     bpy.utils.register_class(SelectPanelObj)
     bpy.utils.register_class(SelectPanelMesh)
+    bpy.utils.register_class(VertexGroups)
 
 
 def unregister():
     bpy.utils.unregister_class(SelectPanelObj)
     bpy.utils.unregister_class(SelectPanelMesh)
+    bpy.utils.unregister_class(VertexGroups)
 
 if __name__ == "__main__":
     register()
