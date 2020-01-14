@@ -73,8 +73,8 @@ class SelectPanelObj(View3DPanel, bpy.types.Panel):
         col = layout.column(align=True)
         col.scale_y = 1.5
         row = col.row(align=True)
-        row.operator("object.select_more")
-        row.operator("object.select_less")
+        row.operator("object.select_more", text="Parent/Child +")
+        row.operator("object.select_less", text="Parent/Child -")
         
         col = layout.column(align=True)
         col.scale_y = 1.5
