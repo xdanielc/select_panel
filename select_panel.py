@@ -21,7 +21,7 @@ bl_info = {
     "author" : "Daniel Calderón",
     "description" : "Select Panel",
     "blender" : (2, 80, 0),
-    "version" : (0, 0, 2),
+    "version" : (0, 0, 3),
     "location" : "",
     "warning" : "",
     "category" : "Generic"
@@ -163,11 +163,6 @@ class VertexGroups(View3DPanel, bpy.types.Panel):
     bl_label = "Vertex Groups"
     bl_context ="mesh_edit"
 
-    @classmethod
-    def poll(cls, context):
-        engine = context.engine
-        obj = context.object
-        return (obj and obj.type in {'MESH', 'LATTICE'} and (engine in cls.COMPAT_ENGINES))
 
     def draw(self, context):
         layout = self.layout
