@@ -61,6 +61,8 @@ class SelectPanelObj(View3DPanel, bpy.types.Panel):
         row = col.row(align=True)
         row.operator("view3d.select_box", text="Box")
         row.operator("view3d.select_circle", text="Brush")
+        row.operator("view3d.select_lasso", text="Lasso")
+        
         
         col = layout.column(align=True)
         col.scale_y = 1.5
@@ -101,6 +103,7 @@ class SelectPanelMesh(View3DPanel, bpy.types.Panel):
         row.scale_y = 1.3
         row.operator("view3d.select_box", text="Box")
         row.operator("view3d.select_circle", text="Circle")
+        row.operator("view3d.select_lasso", text="Lasso")
         
         row = layout.row(align=True)
         row.scale_y = 1.3
