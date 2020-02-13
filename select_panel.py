@@ -21,7 +21,7 @@ bl_info = {
     "author" : "Daniel Calderón",
     "description" : "Select Panel",
     "blender" : (2, 80, 0),
-    "version" : (0, 0, 3),
+    "version" : (0, 0, 4),
     "location" : "",
     "warning" : "",
     "category" : "Generic"
@@ -61,7 +61,6 @@ class SelectPanelObj(View3DPanel, bpy.types.Panel):
         row = col.row(align=True)
         row.operator("view3d.select_box", text="Box")
         row.operator("view3d.select_circle", text="Brush")
-        col.operator("object.select_by_type")
         
         col = layout.column(align=True)
         col.scale_y = 1.5
@@ -112,17 +111,18 @@ class SelectPanelMesh(View3DPanel, bpy.types.Panel):
         col.scale_y = 1.3
         col.operator("mesh.edges_select_sharp")
         
-        
-
         col = layout.column(align=True)
-        col.scale_y = 2
+        col.scale_y = 1.3
         col.operator("mesh.select_similar", text="Similar")
         
         col = layout.column(align=True)
-        col.operator("mesh.select_non_manifold", text="Non Manifold")
-        col.operator("mesh.select_loose", text="Loose")
-        col.operator("mesh.select_interior_faces", text="Interior faces")
-        col.operator("mesh.select_face_by_sides", text="By sides")
+        col.scale_y = 1.3
+        row = col.row(align=True)
+        row.operator("mesh.select_non_manifold", text="Non Manifold")
+        row.operator("mesh.select_loose", text="Loose")
+        row = col.row(align=True)
+        row.operator("mesh.select_interior_faces", text="Interior faces")
+        row.operator("mesh.select_face_by_sides", text="By sides")
         col.operator("mesh.select_ungrouped", text="Ungrouped verts")
         
         col = layout.column(align=True)
