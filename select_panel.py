@@ -21,13 +21,15 @@ bl_info = {
     "author" : "Daniel Calderón",
     "description" : "Select Panel",
     "blender" : (2, 80, 0),
-    "version" : (0, 0, 4),
+    "version" : (0, 1, 0),
     "location" : "",
     "warning" : "",
     "category" : "Generic"
 }
 
 import bpy
+from bpy.types import AddonPreferences
+from bpy.props import StringProperty
 
 class View3DPanel:
     bl_space_type = 'VIEW_3D'
@@ -39,7 +41,7 @@ class View3DPanel:
         return (context.object is not None)
 
 
-class SelectPanelObj(View3DPanel, bpy.types.Panel):
+class VIEW3D_PT_Obj_Select(View3DPanel, bpy.types.Panel):
     bl_idname = "VIEW3D_PT_test_2"
     bl_label = "Select Panel"
     bl_context = "objectmode"
@@ -82,7 +84,7 @@ class SelectPanelObj(View3DPanel, bpy.types.Panel):
         col.operator("object.select_pattern", text="Search name")
         
         
-class SelectPanelMesh(View3DPanel, bpy.types.Panel):
+class VIEW3D_PT_Mesh_Select(View3DPanel, bpy.types.Panel):
     bl_idname = "VIEW3D_PT_test_3"
     bl_label = "Select Panel"
     bl_context ="mesh_edit"
@@ -158,7 +160,7 @@ class SelectPanelMesh(View3DPanel, bpy.types.Panel):
         col.operator("mesh.select_mirror")
         col.operator("mesh.ext_deselect_boundary")
         
-class VertexGroups(View3DPanel, bpy.types.Panel):
+class VIEW3D_PT_VertexGroups(View3DPanel, bpy.types.Panel):
     bl_idname = "VIEW3D_PT_test_4"
     bl_label = "Vertex Groups"
     bl_context ="mesh_edit"
@@ -208,17 +210,71 @@ class VertexGroups(View3DPanel, bpy.types.Panel):
             sub.operator("object.vertex_group_deselect", text="Deselect")
 
             layout.prop(context.tool_settings, "vertex_group_weight", text="Weight")
-        
+
+
+# Add-ons Preferences Update Panel
+
+# Define Panel classes for updating
+panels = (
+    View3DPanel,
+    )
+
+
+def update_panel(self, context):
+    message = "Select Panel: Updating Panel locations has failed"
+    try:
+        for panel in panels:
+            if "bl_rna" in panel.__dict__:
+                bpy.utils.unregister_class(panel)
+
+        for panel in panels:
+            panel.bl_category = context.preferences.addons[__name__].preferences.category
+            bpy.utils.register_class(panel)
+
+    except Exception as e:
+        print("\n[{}]\n{}\n\nError:\n{}".format(__name__, message, e))
+        pass
+
+
+class SelectPanelPreferences(AddonPreferences):
+    # this must match the addon name, use '__package__'
+    # when defining this in a submodule of a python package.
+    bl_idname = __name__
+
+    category: StringProperty(
+            name="Tab Category",
+            description="Choose a name for the category of the panel",
+            default="Select",
+            update=update_panel
+            )
+
+    def draw(self, context):
+        layout = self.layout
+
+        row = layout.row()
+        col = row.column()
+        col.label(text="Tab Category:")
+        col.prop(self, "category", text="")
+
+
+classes = (
+    VIEW3D_PT_Obj_Select,
+    VIEW3D_PT_Mesh_Select,
+    VIEW3D_PT_VertexGroups,
+    SelectPanelPreferences
+    )
+
+
+# Register all operators and panels
 def register():
-    bpy.utils.register_class(SelectPanelObj)
-    bpy.utils.register_class(SelectPanelMesh)
-    bpy.utils.register_class(VertexGroups)
+    for cls in classes:
+        bpy.utils.register_class(cls)
 
 
 def unregister():
-    bpy.utils.unregister_class(SelectPanelObj)
-    bpy.utils.unregister_class(SelectPanelMesh)
-    bpy.utils.unregister_class(VertexGroups)
+    for cls in classes:
+        bpy.utils.unregister_class(cls)
+
 
 if __name__ == "__main__":
     register()
