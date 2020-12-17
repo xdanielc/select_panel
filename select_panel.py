@@ -21,7 +21,7 @@ bl_info = {
     "author" : "Daniel Calderón",
     "description" : "Select Panel",
     "blender" : (2, 80, 0),
-    "version" : (0, 1, 0),
+    "version" : (0, 1, 2),
     "location" : "",
     "warning" : "",
     "category" : "Generic"
@@ -30,6 +30,7 @@ bl_info = {
 import bpy
 from bpy.types import AddonPreferences
 from bpy.props import StringProperty
+
 
 class View3DPanel:
     bl_space_type = 'VIEW_3D'
@@ -158,7 +159,8 @@ class VIEW3D_PT_Mesh_Select(View3DPanel, bpy.types.Panel):
         col.scale_y = 1.3
         col.operator("mesh.select_axis")
         col.operator("mesh.select_mirror")
-        col.operator("mesh.ext_deselect_boundary")
+        if hasattr(bpy.ops.mesh, "ext_deselect_boundary"):
+            col.operator("mesh.ext_deselect_boundary")
         
 class VIEW3D_PT_VertexGroups(View3DPanel, bpy.types.Panel):
     bl_idname = "VIEW3D_PT_test_4"
