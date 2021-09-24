@@ -43,7 +43,7 @@ class View3DPanel:
 
 
 class VIEW3D_PT_Obj_Select(View3DPanel, bpy.types.Panel):
-    bl_idname = "VIEW3D_PT_test_2"
+    bl_idname = "VIEW3D_PT_obj_select"
     bl_label = "Select Panel"
     bl_context = "objectmode"
 
@@ -88,7 +88,7 @@ class VIEW3D_PT_Obj_Select(View3DPanel, bpy.types.Panel):
 
 
 class VIEW3D_PT_Mesh_Select(View3DPanel, bpy.types.Panel):
-    bl_idname = "VIEW3D_PT_test_3"
+    bl_idname = "VIEW3D_PT_mesh_select"
     bl_label = "Select Panel"
     bl_context = "mesh_edit"
 
@@ -164,7 +164,7 @@ class VIEW3D_PT_Mesh_Select(View3DPanel, bpy.types.Panel):
 
 
 class VIEW3D_PT_VertexGroups(View3DPanel, bpy.types.Panel):
-    bl_idname = "VIEW3D_PT_test_4"
+    bl_idname = "VIEW3D_PT_vertex_groups_select"
     bl_label = "Vertex Groups"
     bl_context = "mesh_edit"
 
@@ -219,17 +219,15 @@ class VIEW3D_PT_VertexGroups(View3DPanel, bpy.types.Panel):
             layout.prop(context.tool_settings,
                         "vertex_group_weight", text="Weight")
 
-
 # Add-ons Preferences Update Panel
-
 # Define Panel classes for updating
+
 panels = (
     VIEW3D_PT_Obj_Select,
     VIEW3D_PT_Mesh_Select,
     VIEW3D_PT_VertexGroups,
-    View3DPanel
+    View3DPanel,
 )
-
 
 def update_panel(self, context):
     message = "Select Panel: Updating Panel locations has failed"
@@ -245,7 +243,6 @@ def update_panel(self, context):
     except Exception as e:
         print("\n[{}]\n{}\n\nError:\n{}".format(__name__, message, e))
         pass
-
 
 class SelectPanelPreferences(AddonPreferences):
     # this must match the addon name, use '__package__'
@@ -267,29 +264,23 @@ class SelectPanelPreferences(AddonPreferences):
         col.label(text="Tab Category:")
         col.prop(self, "category", text="")
 
-
 classes = (
     VIEW3D_PT_Obj_Select,
     VIEW3D_PT_Mesh_Select,
-    VIEW3D_PT_VertexGroups
+    VIEW3D_PT_VertexGroups,
+    SelectPanelPreferences
 )
-
 
 # Register all operators and panels
 def register():
     for cls in classes:
         bpy.utils.register_class(cls)
 
-    bpy.utils.register_class(SelectPanelPreferences)
     update_panel(None, bpy.context)
-
 
 def unregister():
     for cls in reversed(classes):
         bpy.utils.unregister_class(cls)
-
-    bpy.utils.unregister_class(SelectPanelPreferences)
-
 
 if __name__ == "__main__":
     register()
