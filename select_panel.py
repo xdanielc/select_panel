@@ -16,20 +16,20 @@
 #
 # ----- END GPL LICENSE BLOCK -----
 
-bl_info = {
-    "name" : "Select panel",
-    "author" : "Daniel Calderón",
-    "description" : "Select Panel",
-    "blender" : (2, 80, 0),
-    "version" : (0, 1, 2),
-    "location" : "",
-    "warning" : "",
-    "category" : "Generic"
-}
-
-import bpy
-from bpy.types import AddonPreferences
 from bpy.props import StringProperty
+from bpy.types import AddonPreferences
+import bpy
+bl_info = {
+    "name": "Select panel",
+    "author": "Daniel Calderón",
+    "description": "Select Panel",
+    "blender": (2, 80, 0),
+    "version": (0, 1, 3),
+    "location": "3D View > Toolbox > Select tab",
+    "warning": "",
+    "doc_url": "https://github.com/xdanielc/select_panel",
+    "category": "Generic"
+}
 
 
 class View3DPanel:
@@ -49,75 +49,77 @@ class VIEW3D_PT_Obj_Select(View3DPanel, bpy.types.Panel):
 
     def draw(self, context):
         layout = self.layout
-        
+
         layout.label(text="Select")
         col = layout.column(align=True)
         row = col.row(align=True)
         row.scale_y = 1.5
-        row.operator("object.select_all", text="All").action='SELECT'
-        row.operator("object.select_all", text="None").action='DESELECT'
-        row.operator("object.select_all", text="Invert").action='INVERT'
-        
+        row.operator("object.select_all", text="All").action = 'SELECT'
+        row.operator("object.select_all", text="None").action = 'DESELECT'
+        row.operator("object.select_all", text="Invert").action = 'INVERT'
+
         layout.label(text="select")
         col = layout.column(align=True)
         col.scale_y = 1.5
         row = col.row(align=True)
         row.operator("view3d.select_box", text="Box")
         row.operator("view3d.select_circle", text="Brush")
-        
+
         col = layout.column(align=True)
         col.scale_y = 1.5
         row = col.row(align=True)
         row.operator("object.select_camera", text="Camera")
         row.operator("object.select_mirror", text="Mirror")
         row.operator("object.select_random", text="Random")
-        
+
         col = layout.column(align=True)
         col.scale_y = 1.5
         row = col.row(align=True)
         row.operator("object.select_more", text="Parent/Child +")
         row.operator("object.select_less", text="Parent/Child -")
-        
+
         col = layout.column(align=True)
         col.scale_y = 1.5
-        col.operator_menu_enum("object.select_grouped", "type", text="Grouped...")
-        col.operator_menu_enum("object.select_linked", "type", text="Linked...")
+        col.operator_menu_enum("object.select_grouped",
+                               "type", text="Grouped...")
+        col.operator_menu_enum("object.select_linked",
+                               "type", text="Linked...")
         col.operator("object.select_pattern", text="Search name")
-        
-        
+
+
 class VIEW3D_PT_Mesh_Select(View3DPanel, bpy.types.Panel):
     bl_idname = "VIEW3D_PT_test_3"
     bl_label = "Select Panel"
-    bl_context ="mesh_edit"
+    bl_context = "mesh_edit"
 
     def draw(self, context):
         layout = self.layout
-        
+
         layout.label(text="Select")
         row = layout.row(align=True)
         row.scale_y = 1.3
         row.operator("mesh.select_all", text="All").action = 'SELECT'
         row.operator("mesh.select_all", text="None").action = 'DESELECT'
         row.operator("mesh.select_all", text="Invert").action = 'INVERT'
-        
+
         row = layout.row(align=True)
         row.scale_y = 1.3
         row.operator("view3d.select_box", text="Box")
         row.operator("view3d.select_circle", text="Circle")
-        
+
         row = layout.row(align=True)
         row.scale_y = 1.3
         row.operator("mesh.select_random", text="Random")
         row.operator("mesh.select_nth", text="Checker Des")
-        
+
         col = layout.column(align=True)
         col.scale_y = 1.3
         col.operator("mesh.edges_select_sharp")
-        
+
         col = layout.column(align=True)
         col.scale_y = 1.3
         col.operator("mesh.select_similar", text="Similar")
-        
+
         col = layout.column(align=True)
         col.scale_y = 1.3
         row = col.row(align=True)
@@ -127,7 +129,7 @@ class VIEW3D_PT_Mesh_Select(View3DPanel, bpy.types.Panel):
         row.operator("mesh.select_interior_faces", text="Interior faces")
         row.operator("mesh.select_face_by_sides", text="By sides")
         col.operator("mesh.select_ungrouped", text="Ungrouped verts")
-        
+
         col = layout.column(align=True)
         col.scale_y = 2
         row = col.row(align=True)
@@ -136,24 +138,22 @@ class VIEW3D_PT_Mesh_Select(View3DPanel, bpy.types.Panel):
         row.operator("mesh.select_less", text="", icon="REMOVE")
         row.operator("mesh.select_next_item", text="", icon="FRAME_NEXT")
         row.operator("mesh.select_prev_item", text="", icon="FRAME_PREV")
-        
 
         col = layout.column(align=True)
         col.scale_y = 1.3
         row = col.row(align=True)
-        row.operator("mesh.loop_multi_select", text="Loop").ring=False
-        row.operator("mesh.loop_multi_select", text="Ring").ring=True
+        row.operator("mesh.loop_multi_select", text="Loop").ring = False
+        row.operator("mesh.loop_multi_select", text="Ring").ring = True
         row = col.row(align=True)
-        row.operator("mesh.loop_to_region", text="Loop inner region").select_bigger=False
+        row.operator("mesh.loop_to_region",
+                     text="Loop inner region").select_bigger = False
         row.operator("mesh.region_to_loop", text="Boundary Loop")
-        
- 
+
         row = layout.row(align=True)
         row.scale_y = 1.3
-        row.operator("mesh.select_linked", text="Linked")        
-        row.operator("mesh.shortest_path_select", text="Shortest")        
+        row.operator("mesh.select_linked", text="Linked")
+        row.operator("mesh.shortest_path_select", text="Shortest")
         row.operator("mesh.faces_select_linked_flat", text="Coplanar")
-        
 
         col = layout.column(align=True)
         col.scale_y = 1.3
@@ -161,12 +161,12 @@ class VIEW3D_PT_Mesh_Select(View3DPanel, bpy.types.Panel):
         col.operator("mesh.select_mirror")
         if hasattr(bpy.ops.mesh, "ext_deselect_boundary"):
             col.operator("mesh.ext_deselect_boundary")
-        
+
+
 class VIEW3D_PT_VertexGroups(View3DPanel, bpy.types.Panel):
     bl_idname = "VIEW3D_PT_test_4"
     bl_label = "Vertex Groups"
-    bl_context ="mesh_edit"
-
+    bl_context = "mesh_edit"
 
     def draw(self, context):
         layout = self.layout
@@ -179,22 +179,27 @@ class VIEW3D_PT_VertexGroups(View3DPanel, bpy.types.Panel):
             rows = 5
 
         row = layout.row()
-        row.template_list("MESH_UL_vgroups", "", ob, "vertex_groups", ob.vertex_groups, "active_index", rows=rows)
+        row.template_list("MESH_UL_vgroups", "", ob, "vertex_groups",
+                          ob.vertex_groups, "active_index", rows=rows)
 
         col = row.column(align=True)
 
         col.operator("object.vertex_group_add", icon='ADD', text="")
-        props = col.operator("object.vertex_group_remove", icon='REMOVE', text="")
+        props = col.operator("object.vertex_group_remove",
+                             icon='REMOVE', text="")
         props.all_unlocked = props.all = False
 
         col.separator()
 
-        col.menu("MESH_MT_vertex_group_context_menu", icon='DOWNARROW_HLT', text="")
+        col.menu("MESH_MT_vertex_group_context_menu",
+                 icon='DOWNARROW_HLT', text="")
 
         if group:
             col.separator()
-            col.operator("object.vertex_group_move", icon='TRIA_UP', text="").direction = 'UP'
-            col.operator("object.vertex_group_move", icon='TRIA_DOWN', text="").direction = 'DOWN'
+            col.operator("object.vertex_group_move",
+                         icon='TRIA_UP', text="").direction = 'UP'
+            col.operator("object.vertex_group_move",
+                         icon='TRIA_DOWN', text="").direction = 'DOWN'
 
         if (
                 ob.vertex_groups and
@@ -211,15 +216,19 @@ class VIEW3D_PT_VertexGroups(View3DPanel, bpy.types.Panel):
             sub.operator("object.vertex_group_select", text="Select")
             sub.operator("object.vertex_group_deselect", text="Deselect")
 
-            layout.prop(context.tool_settings, "vertex_group_weight", text="Weight")
+            layout.prop(context.tool_settings,
+                        "vertex_group_weight", text="Weight")
 
 
 # Add-ons Preferences Update Panel
 
 # Define Panel classes for updating
 panels = (
-    View3DPanel,
-    )
+    VIEW3D_PT_Obj_Select,
+    VIEW3D_PT_Mesh_Select,
+    VIEW3D_PT_VertexGroups,
+    View3DPanel
+)
 
 
 def update_panel(self, context):
@@ -244,11 +253,11 @@ class SelectPanelPreferences(AddonPreferences):
     bl_idname = __name__
 
     category: StringProperty(
-            name="Tab Category",
-            description="Choose a name for the category of the panel",
-            default="Select",
-            update=update_panel
-            )
+        name="Tab Category",
+        description="Choose a name for the category of the panel",
+        default="Select",
+        update=update_panel
+    )
 
     def draw(self, context):
         layout = self.layout
@@ -262,9 +271,8 @@ class SelectPanelPreferences(AddonPreferences):
 classes = (
     VIEW3D_PT_Obj_Select,
     VIEW3D_PT_Mesh_Select,
-    VIEW3D_PT_VertexGroups,
-    SelectPanelPreferences
-    )
+    VIEW3D_PT_VertexGroups
+)
 
 
 # Register all operators and panels
@@ -272,10 +280,15 @@ def register():
     for cls in classes:
         bpy.utils.register_class(cls)
 
+    bpy.utils.register_class(SelectPanelPreferences)
+    update_panel(None, bpy.context)
+
 
 def unregister():
-    for cls in classes:
+    for cls in reversed(classes):
         bpy.utils.unregister_class(cls)
+
+    bpy.utils.unregister_class(SelectPanelPreferences)
 
 
 if __name__ == "__main__":
