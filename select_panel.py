@@ -16,6 +16,7 @@
 #
 # ----- END GPL LICENSE BLOCK -----
 
+from bpy.ops import text
 from bpy.props import StringProperty
 from bpy.types import AddonPreferences
 import bpy
@@ -24,7 +25,7 @@ bl_info = {
     "author": "Daniel Calderón",
     "description": "Select Panel",
     "blender": (2, 80, 0),
-    "version": (0, 1, 3),
+    "version": (0, 1, 4),
     "location": "3D View > Toolbox > Select tab",
     "warning": "",
     "doc_url": "https://github.com/xdanielc/select_panel",
@@ -32,20 +33,17 @@ bl_info = {
 }
 
 
-class View3DPanel:
+class VIEW3D_PT_Obj_Select(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_category = "Select"
+    bl_idname = "VIEW3D_PT_obj_select"
+    bl_label = "Select Panel"
+    bl_context = "objectmode"
 
     @classmethod
     def poll(cls, context):
         return (context.object is not None)
-
-
-class VIEW3D_PT_Obj_Select(View3DPanel, bpy.types.Panel):
-    bl_idname = "VIEW3D_PT_obj_select"
-    bl_label = "Select Panel"
-    bl_context = "objectmode"
 
     def draw(self, context):
         layout = self.layout
@@ -80,17 +78,23 @@ class VIEW3D_PT_Obj_Select(View3DPanel, bpy.types.Panel):
 
         col = layout.column(align=True)
         col.scale_y = 1.5
-        col.operator_menu_enum("object.select_grouped",
-                               "type", text="Grouped...")
-        col.operator_menu_enum("object.select_linked",
-                               "type", text="Linked...")
+        col.operator_menu_enum("object.select_by_type", "type", text="Type...")
+        col.operator_menu_enum("object.select_grouped", "type", text="Grouped...")
+        col.operator_menu_enum("object.select_linked", "type", text="Linked...")
         col.operator("object.select_pattern", text="Search name")
 
 
-class VIEW3D_PT_Mesh_Select(View3DPanel, bpy.types.Panel):
+class VIEW3D_PT_Mesh_Select(bpy.types.Panel):
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'UI'
+    bl_category = "Select"
     bl_idname = "VIEW3D_PT_mesh_select"
     bl_label = "Select Panel"
     bl_context = "mesh_edit"
+
+    @classmethod
+    def poll(cls, context):
+        return (context.object is not None)
 
     def draw(self, context):
         layout = self.layout
@@ -145,8 +149,7 @@ class VIEW3D_PT_Mesh_Select(View3DPanel, bpy.types.Panel):
         row.operator("mesh.loop_multi_select", text="Loop").ring = False
         row.operator("mesh.loop_multi_select", text="Ring").ring = True
         row = col.row(align=True)
-        row.operator("mesh.loop_to_region",
-                     text="Loop inner region").select_bigger = False
+        row.operator("mesh.loop_to_region", text="Loop inner region").select_bigger = False
         row.operator("mesh.region_to_loop", text="Boundary Loop")
 
         row = layout.row(align=True)
@@ -154,6 +157,12 @@ class VIEW3D_PT_Mesh_Select(View3DPanel, bpy.types.Panel):
         row.operator("mesh.select_linked", text="Linked")
         row.operator("mesh.shortest_path_select", text="Shortest")
         row.operator("mesh.faces_select_linked_flat", text="Coplanar")
+        row = layout.row(align=True)
+        row.scale_y = 1.3
+        if hasattr(bpy.ops.mesh, "adj_verices"):
+            row.operator("mesh.adj_verices", text="adj vertices")
+            row.operator("mesh.adj_edges", text="adj edges")
+            row.operator("mesh.adj_polygons", text="adj faces")
 
         col = layout.column(align=True)
         col.scale_y = 1.3
@@ -161,9 +170,14 @@ class VIEW3D_PT_Mesh_Select(View3DPanel, bpy.types.Panel):
         col.operator("mesh.select_mirror")
         if hasattr(bpy.ops.mesh, "ext_deselect_boundary"):
             col.operator("mesh.ext_deselect_boundary")
+        if hasattr(bpy.ops.mesh, "pivot_set"):
+            col.operator("mesh.pivot_set", text="Pivot")
 
 
-class VIEW3D_PT_VertexGroups(View3DPanel, bpy.types.Panel):
+class VIEW3D_PT_VertexGroups(bpy.types.Panel):
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'UI'
+    bl_category = "Select"
     bl_idname = "VIEW3D_PT_vertex_groups_select"
     bl_label = "Vertex Groups"
     bl_context = "mesh_edit"
@@ -179,33 +193,24 @@ class VIEW3D_PT_VertexGroups(View3DPanel, bpy.types.Panel):
             rows = 5
 
         row = layout.row()
-        row.template_list("MESH_UL_vgroups", "", ob, "vertex_groups",
-                          ob.vertex_groups, "active_index", rows=rows)
+        row.template_list("MESH_UL_vgroups", "", ob, "vertex_groups", ob.vertex_groups, "active_index", rows=rows)
 
         col = row.column(align=True)
 
         col.operator("object.vertex_group_add", icon='ADD', text="")
-        props = col.operator("object.vertex_group_remove",
-                             icon='REMOVE', text="")
+        props = col.operator("object.vertex_group_remove", icon='REMOVE', text="")
         props.all_unlocked = props.all = False
 
         col.separator()
 
-        col.menu("MESH_MT_vertex_group_context_menu",
-                 icon='DOWNARROW_HLT', text="")
+        col.menu("MESH_MT_vertex_group_context_menu", icon='DOWNARROW_HLT', text="")
 
         if group:
             col.separator()
-            col.operator("object.vertex_group_move",
-                         icon='TRIA_UP', text="").direction = 'UP'
-            col.operator("object.vertex_group_move",
-                         icon='TRIA_DOWN', text="").direction = 'DOWN'
+            col.operator("object.vertex_group_move", icon='TRIA_UP', text="").direction = 'UP'
+            col.operator("object.vertex_group_move", icon='TRIA_DOWN', text="").direction = 'DOWN'
 
-        if (
-                ob.vertex_groups and
-                (ob.mode == 'EDIT' or
-                 (ob.mode == 'WEIGHT_PAINT' and ob.type == 'MESH' and ob.data.use_paint_mask_vertex))
-        ):
+        if ob.vertex_groups and (ob.mode == 'EDIT' or (ob.mode == 'WEIGHT_PAINT' and ob.type == 'MESH' and ob.data.use_paint_mask_vertex)):
             row = layout.row()
 
             sub = row.row(align=True)
@@ -216,18 +221,18 @@ class VIEW3D_PT_VertexGroups(View3DPanel, bpy.types.Panel):
             sub.operator("object.vertex_group_select", text="Select")
             sub.operator("object.vertex_group_deselect", text="Deselect")
 
-            layout.prop(context.tool_settings,
-                        "vertex_group_weight", text="Weight")
+            layout.prop(context.tool_settings, "vertex_group_weight", text="Weight")
+
 
 # Add-ons Preferences Update Panel
-# Define Panel classes for updating
 
+# Define Panel classes for updating
 panels = (
     VIEW3D_PT_Obj_Select,
     VIEW3D_PT_Mesh_Select,
-    VIEW3D_PT_VertexGroups,
-    View3DPanel,
+    VIEW3D_PT_VertexGroups
 )
+
 
 def update_panel(self, context):
     message = "Select Panel: Updating Panel locations has failed"
@@ -243,6 +248,7 @@ def update_panel(self, context):
     except Exception as e:
         print("\n[{}]\n{}\n\nError:\n{}".format(__name__, message, e))
         pass
+
 
 class SelectPanelPreferences(AddonPreferences):
     # this must match the addon name, use '__package__'
@@ -264,6 +270,37 @@ class SelectPanelPreferences(AddonPreferences):
         col.label(text="Tab Category:")
         col.prop(self, "category", text="")
 
+        row = layout.row()
+        row.label(text="Recommended addons")
+
+        row = layout.row()
+        if not hasattr(bpy.ops.mesh, "adj_verices"):
+            row.label(text="Adjacent selection", icon='ERROR')
+        else:
+            row.label(text="Adjacent selection", icon='CHECKMARK')
+        row.operator("wm.url_open", text="URL", icon='URL').url = "https://github.com/Borschberry/Adjacent-Selection"
+
+        row = layout.row()
+        if not hasattr(bpy.ops.mesh, "ext_deselect_boundary"):
+            row.label(text="Edit Mesh Tools", icon='ERROR')
+        else:
+            row.label(text="Edit Mesh Tools", icon='CHECKMARK')
+        row.label(text="Addon installed with blender", icon='INFO')
+
+        row = layout.row()
+        if not hasattr(bpy.ops.mesh, "pivot_set"):
+            row.label(text="xdanic utilities", icon='ERROR')
+        else:
+            row.label(text="xdanic utilities", icon='CHECKMARK')
+        row.operator("wm.url_open", text="URL", icon='URL').url = "https://github.com/xdanielc"
+
+        row = layout.row()
+        row.label(text="Shortchuts added:")
+        row.label(text="Select islands with double click and shift double click")
+        row.label(text="Select more or less with shift ctrl + mouse wheel")
+        row.label(text="Select next or prev with shift + mouse wheel")
+
+
 classes = (
     VIEW3D_PT_Obj_Select,
     VIEW3D_PT_Mesh_Select,
@@ -271,16 +308,36 @@ classes = (
     SelectPanelPreferences
 )
 
+addon_keymaps = []
+
 # Register all operators and panels
 def register():
     for cls in classes:
         bpy.utils.register_class(cls)
 
+    wm = bpy.context.window_manager
+    kc = wm.keyconfigs.addon
+    if kc:
+        # Name "mesh" is inside 3D view, but space_type should be set as empty to work
+        km = kc.keymaps.new(name='Mesh', space_type='EMPTY')
+        kmi = km.keymap_items.new("mesh.select_linked", 'LEFTMOUSE', 'DOUBLE_CLICK')
+        kmi = km.keymap_items.new("mesh.select_linked", 'LEFTMOUSE', 'DOUBLE_CLICK', shift=True)
+        kmi = km.keymap_items.new("mesh.select_more", 'WHEELUPMOUSE', 'PRESS', shift=True, ctrl=True)
+        kmi = km.keymap_items.new("mesh.select_less", 'WHEELDOWNMOUSE', 'PRESS', shift=True, ctrl=True)
+        kmi = km.keymap_items.new("mesh.select_next_item", 'WHEELUPMOUSE', 'PRESS', shift=True)
+        kmi = km.keymap_items.new("mesh.select_prev_item", 'WHEELDOWNMOUSE', 'PRESS', shift=True)
+
     update_panel(None, bpy.context)
 
+
 def unregister():
+    for km,kmi in addon_keymaps:
+        km.keymap_items.remove(kmi)
+        addon_keymaps.clear()
+
     for cls in reversed(classes):
         bpy.utils.unregister_class(cls)
+
 
 if __name__ == "__main__":
     register()
