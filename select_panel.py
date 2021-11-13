@@ -25,7 +25,7 @@ bl_info = {
     "author": "Daniel Calderón",
     "description": "Select Panel",
     "blender": (2, 80, 0),
-    "version": (0, 1, 4),
+    "version": (0, 1, 5),
     "location": "3D View > Toolbox > Select tab",
     "warning": "",
     "doc_url": "https://github.com/xdanielc/select_panel",
@@ -159,7 +159,7 @@ class VIEW3D_PT_Mesh_Select(bpy.types.Panel):
         row.operator("mesh.faces_select_linked_flat", text="Coplanar")
         row = layout.row(align=True)
         row.scale_y = 1.3
-        if hasattr(bpy.ops.mesh, "adj_verices"):
+        if operator_exists("mesh.adj_verices"):
             row.operator("mesh.adj_verices", text="adj vertices")
             row.operator("mesh.adj_edges", text="adj edges")
             row.operator("mesh.adj_polygons", text="adj faces")
@@ -168,9 +168,9 @@ class VIEW3D_PT_Mesh_Select(bpy.types.Panel):
         col.scale_y = 1.3
         col.operator("mesh.select_axis")
         col.operator("mesh.select_mirror")
-        if hasattr(bpy.ops.mesh, "ext_deselect_boundary"):
+        if operator_exists("mesh.ext_deselect_boundary"):
             col.operator("mesh.ext_deselect_boundary")
-        if hasattr(bpy.ops.mesh, "pivot_set"):
+        if operator_exists("mesh.pivot_set"):
             col.operator("mesh.pivot_set", text="Pivot")
 
 
@@ -274,32 +274,44 @@ class SelectPanelPreferences(AddonPreferences):
         row.label(text="Recommended addons")
 
         row = layout.row()
-        if not hasattr(bpy.ops.mesh, "adj_verices"):
+        if not operator_exists("mesh.adj_verices"):
             row.label(text="Adjacent selection", icon='ERROR')
         else:
             row.label(text="Adjacent selection", icon='CHECKMARK')
         row.operator("wm.url_open", text="URL", icon='URL').url = "https://github.com/Borschberry/Adjacent-Selection"
 
         row = layout.row()
-        if not hasattr(bpy.ops.mesh, "ext_deselect_boundary"):
+        if not operator_exists("mesh.ext_deselect_boundary"):
             row.label(text="Edit Mesh Tools", icon='ERROR')
         else:
             row.label(text="Edit Mesh Tools", icon='CHECKMARK')
         row.label(text="Addon installed with blender", icon='INFO')
 
         row = layout.row()
-        if not hasattr(bpy.ops.mesh, "pivot_set"):
+        if not operator_exists("mesh.pivot_set"):
             row.label(text="xdanic utilities", icon='ERROR')
         else:
             row.label(text="xdanic utilities", icon='CHECKMARK')
         row.operator("wm.url_open", text="URL", icon='URL').url = "https://github.com/xdanielc"
 
-        row = layout.row()
-        row.label(text="Shortchuts added:")
-        row.label(text="Select islands with double click and shift double click")
-        row.label(text="Select more or less with shift ctrl + mouse wheel")
-        row.label(text="Select next or prev with shift + mouse wheel")
+        col = layout.column()
+        col.label(text="Shortchuts added:")
+        col.label(text="Select islands with double click and shift double click")
+        col.label(text="Select more or less with shift ctrl + mouse wheel")
+        col.label(text="Select next or prev with shift + mouse wheel")
 
+
+def operator_exists(idname):
+    names = idname.split(".")
+    a = bpy.ops
+    for prop in names:
+        a = getattr(a, prop)
+        
+    try:
+        name = a.__repr__()
+        return True
+    except:
+        return False
 
 classes = (
     VIEW3D_PT_Obj_Select,
