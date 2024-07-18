@@ -25,11 +25,11 @@ bl_info = {
     "author": "Daniel Calderón",
     "description": "Select Panel",
     "blender": (2, 80, 0),
-    "version": (0, 1, 5),
+    "version": (0, 1, 6),
     "location": "3D View > Toolbox > Select tab",
     "warning": "",
     "doc_url": "https://github.com/xdanielc/select_panel",
-    "category": "Generic"
+    "category": "User Interface"
 }
 
 
