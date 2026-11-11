@@ -148,11 +148,11 @@ class VIEW3D_PT_Mesh_Select(bpy.types.Panel):
         row = col.row(align=True)
         row.operator("mesh.loop_multi_select", text="Loop").ring = False
         row.operator("mesh.loop_multi_select", text="Ring").ring = True
+        row = col.row(align=True)
         # Blender 5.2+: whole boundary of each selected boundary edge. Its
         # menu (Select > Select Loops) then names the two boundary operators
         # "Boundary of Selected" (region_to_loop) and "Boundary Loops"
         has_boundary_loops = "select_boundary_loop_multi" in dir(bpy.ops.mesh)
-        row = col.row(align=True)
         row.operator("mesh.loop_to_region",
                      text="Loop Inner-Region" if has_boundary_loops else "Loop inner region").select_bigger = False
         row.operator("mesh.region_to_loop",
