@@ -285,7 +285,7 @@ class SelectPanelPreferences(AddonPreferences):
             row.label(text="Edit Mesh Tools", icon='ERROR')
         else:
             row.label(text="Edit Mesh Tools", icon='CHECKMARK')
-        row.label(text="Addon installed with blender", icon='INFO')
+        row.operator("wm.url_open", text="URL", icon='URL').url = "https://extensions.blender.org/add-ons/edit-mesh-tools/"
 
         row = layout.row()
         if not operator_exists("mesh.pivot_set"):
