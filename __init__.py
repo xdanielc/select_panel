@@ -148,11 +148,11 @@ class VIEW3D_PT_Mesh_Select(bpy.types.Panel):
         row = col.row(align=True)
         if operator_exists("mesh.select_edge_loop_multi"):
             # Blender 5.x: mesh.loop_multi_select was split in two operators
-            row.operator("mesh.select_edge_loop_multi", text="Loop")
-            row.operator("mesh.select_edge_ring_multi", text="Ring")
+            row.operator("mesh.select_edge_loop_multi", text="Edge Loops")
+            row.operator("mesh.select_edge_ring_multi", text="Edge Rings")
         else:
-            row.operator("mesh.loop_multi_select", text="Loop").ring = False
-            row.operator("mesh.loop_multi_select", text="Ring").ring = True
+            row.operator("mesh.loop_multi_select", text="Edge Loops").ring = False
+            row.operator("mesh.loop_multi_select", text="Edge Rings").ring = True
         row = col.row(align=True)
         row.operator("mesh.loop_to_region", text="Loop inner region").select_bigger = False
         row.operator("mesh.region_to_loop", text="Boundary Loop")
