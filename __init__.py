@@ -20,6 +20,8 @@ from bpy.ops import text
 from bpy.props import StringProperty
 from bpy.types import AddonPreferences
 import bpy
+import bmesh
+from bpy.props import BoolProperty, IntProperty
 bl_info = {
     "name": "Select panel",
     "author": "Daniel Calderón",
@@ -31,6 +33,132 @@ bl_info = {
     "doc_url": "https://github.com/xdanielc/select_panel",
     "category": "User Interface"
 }
+
+
+# Poles: vertices are grouped by their number of connected edges
+# (3-poles, 5-poles...), and the panel shows one button per kind of pole
+# that exists on the mesh being edited.
+
+# Above this number of vertices the scan is not done automatically each time
+# the mesh changes, the Refresh button has to be used instead
+POLES_AUTO_SCAN_MAX_VERTS = 200000
+
+_poles_cache = {"key": None, "poles": []}
+
+
+def _edit_meshes(context):
+    """Meshes being edited (several objects can be in Edit Mode at once)."""
+    return [ob for ob in context.objects_in_mode_unique_data if ob.type == 'MESH']
+
+
+def get_poles(context, force=False):
+    """Sorted numbers of connected edges found on the vertices of the edited
+    meshes, or None when the meshes are too big to be scanned automatically.
+    """
+    bms = [(ob, bmesh.from_edit_mesh(ob.data)) for ob in _edit_meshes(context)]
+    key = tuple((ob.data.as_pointer(), len(bm.verts), len(bm.edges), len(bm.faces))
+                for ob, bm in bms)
+    if _poles_cache["key"] != key:
+        if not force and sum(len(bm.verts) for ob, bm in bms) > POLES_AUTO_SCAN_MAX_VERTS:
+            return None
+        poles = set()
+        for ob, bm in bms:
+            poles.update(len(v.link_edges) for v in bm.verts)
+        poles.discard(0)  # loose vertices
+        _poles_cache["key"] = key
+        _poles_cache["poles"] = sorted(poles)
+    return _poles_cache["poles"]
+
+
+class SELECT_PANEL_OT_select_poles(bpy.types.Operator):
+    bl_idname = "select_panel.select_poles"
+    bl_label = "Select Poles"
+    bl_description = "Select the vertices that have exactly this number of connected edges"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    pole_count: IntProperty(
+        name="Pole Count",
+        description="Number of edges connected to the vertices",
+        default=3,
+        min=1
+    )
+    extend: BoolProperty(
+        name="Extend",
+        description="Extend the selection",
+        default=False
+    )
+
+    @classmethod
+    def poll(cls, context):
+        return context.mode == 'EDIT_MESH'
+
+    def execute(self, context):
+        bms = [(ob.data, bmesh.from_edit_mesh(ob.data)) for ob in _edit_meshes(context)]
+        poles = [[v for v in bm.verts
+                  if not v.hide and len(v.link_edges) == self.pole_count]
+                 for me, bm in bms]
+        if not any(poles):
+            self.report({'WARNING'}, "No vertex with %d edges" % self.pole_count)
+            return {'CANCELLED'}
+
+        for (me, bm), verts in zip(bms, poles):
+            if not self.extend:
+                for v in bm.verts:
+                    v.select_set(False)
+            # Same as Select > Select All by Trait > Poles: in edge and face
+            # mode the geometry connected to the vertices is selected
+            if 'VERT' in bm.select_mode:
+                for v in verts:
+                    v.select_set(True)
+            elif 'EDGE' in bm.select_mode:
+                for v in verts:
+                    for e in v.link_edges:
+                        if not e.hide:
+                            e.select_set(True)
+            else:
+                for v in verts:
+                    for f in v.link_faces:
+                        if not f.hide:
+                            f.select_set(True)
+            bm.select_flush_mode()
+            bmesh.update_edit_mesh(me, loop_triangles=False, destructive=False)
+        return {'FINISHED'}
+
+
+class SELECT_PANEL_OT_scan_poles(bpy.types.Operator):
+    bl_idname = "select_panel.scan_poles"
+    bl_label = "Refresh Poles"
+    bl_description = "Look again for the kinds of poles present on the mesh"
+    bl_options = {'INTERNAL'}
+
+    @classmethod
+    def poll(cls, context):
+        return context.mode == 'EDIT_MESH'
+
+    def execute(self, context):
+        get_poles(context, force=True)
+        if context.area:
+            context.area.tag_redraw()
+        return {'FINISHED'}
+
+
+def draw_poles(layout, context):
+    row = layout.row(align=True)
+    row.label(text="Poles")
+    row.operator("select_panel.scan_poles", text="", icon='FILE_REFRESH')
+
+    poles = get_poles(context)
+    if poles is None:
+        layout.label(text="Mesh too dense, use Refresh", icon='INFO')
+        return
+
+    col = layout.column(align=True)
+    col.scale_y = 1.3
+    for i in range(0, len(poles), 3):
+        row = col.row(align=True)
+        for count in poles[i:i + 3]:
+            op = row.operator("select_panel.select_poles", text="%d-Poles" % count)
+            op.pole_count = count
 
 
 class VIEW3D_PT_Obj_Select(bpy.types.Panel):
@@ -132,7 +260,14 @@ class VIEW3D_PT_Mesh_Select(bpy.types.Panel):
         row = col.row(align=True)
         row.operator("mesh.select_interior_faces", text="Interior faces")
         row.operator("mesh.select_face_by_sides", text="By sides")
+        row = col.row(align=True)
+        for label, number, compare in (("Tris", 3, 'EQUAL'), ("Quads", 4, 'EQUAL'), ("N-gons", 4, 'GREATER')):
+            op = row.operator("mesh.select_face_by_sides", text=label)
+            op.number = number
+            op.type = compare
         col.operator("mesh.select_ungrouped", text="Ungrouped verts")
+
+        draw_poles(layout, context)
 
         col = layout.column(align=True)
         col.scale_y = 2
@@ -314,6 +449,8 @@ def operator_exists(idname):
         return False
 
 classes = (
+    SELECT_PANEL_OT_select_poles,
+    SELECT_PANEL_OT_scan_poles,
     VIEW3D_PT_Obj_Select,
     VIEW3D_PT_Mesh_Select,
     VIEW3D_PT_VertexGroups,
