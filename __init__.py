@@ -274,13 +274,6 @@ class SelectPanelPreferences(AddonPreferences):
         row.label(text="Recommended addons")
 
         row = layout.row()
-        if not operator_exists("mesh.adj_verices"):
-            row.label(text="Adjacent selection", icon='ERROR')
-        else:
-            row.label(text="Adjacent selection", icon='CHECKMARK')
-        row.operator("wm.url_open", text="URL", icon='URL').url = "https://github.com/Borschberry/Adjacent-Selection"
-
-        row = layout.row()
         if not operator_exists("mesh.ext_deselect_boundary"):
             row.label(text="Edit Mesh Tools", icon='ERROR')
         else:
