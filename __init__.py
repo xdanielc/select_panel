@@ -56,7 +56,7 @@ class VIEW3D_PT_Obj_Select(bpy.types.Panel):
         row.operator("object.select_all", text="None").action = 'DESELECT'
         row.operator("object.select_all", text="Invert").action = 'INVERT'
 
-        layout.label(text="select")
+        layout.label(text="Select")
         col = layout.column(align=True)
         col.scale_y = 1.5
         row = col.row(align=True)
@@ -295,7 +295,7 @@ class SelectPanelPreferences(AddonPreferences):
         row.operator("wm.url_open", text="URL", icon='URL').url = "https://github.com/xdanielc"
 
         col = layout.column()
-        col.label(text="Shortchuts added:")
+        col.label(text="Shortcuts added:")
         col.label(text="Select islands with double click and shift double click")
         col.label(text="Select more or less with shift ctrl + mouse wheel")
         col.label(text="Select next or prev with shift + mouse wheel")
