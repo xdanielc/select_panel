@@ -332,20 +332,24 @@ def register():
     if kc:
         # Name "mesh" is inside 3D view, but space_type should be set as empty to work
         km = kc.keymaps.new(name='Mesh', space_type='EMPTY')
-        kmi = km.keymap_items.new("mesh.select_linked", 'LEFTMOUSE', 'DOUBLE_CLICK')
-        kmi = km.keymap_items.new("mesh.select_linked", 'LEFTMOUSE', 'DOUBLE_CLICK', shift=True)
-        kmi = km.keymap_items.new("mesh.select_more", 'WHEELUPMOUSE', 'PRESS', shift=True, ctrl=True)
-        kmi = km.keymap_items.new("mesh.select_less", 'WHEELDOWNMOUSE', 'PRESS', shift=True, ctrl=True)
-        kmi = km.keymap_items.new("mesh.select_next_item", 'WHEELUPMOUSE', 'PRESS', shift=True)
-        kmi = km.keymap_items.new("mesh.select_prev_item", 'WHEELDOWNMOUSE', 'PRESS', shift=True)
+        kmis = (
+            km.keymap_items.new("mesh.select_linked", 'LEFTMOUSE', 'DOUBLE_CLICK'),
+            km.keymap_items.new("mesh.select_linked", 'LEFTMOUSE', 'DOUBLE_CLICK', shift=True),
+            km.keymap_items.new("mesh.select_more", 'WHEELUPMOUSE', 'PRESS', shift=True, ctrl=True),
+            km.keymap_items.new("mesh.select_less", 'WHEELDOWNMOUSE', 'PRESS', shift=True, ctrl=True),
+            km.keymap_items.new("mesh.select_next_item", 'WHEELUPMOUSE', 'PRESS', shift=True),
+            km.keymap_items.new("mesh.select_prev_item", 'WHEELDOWNMOUSE', 'PRESS', shift=True),
+        )
+        # Keep track of the items so unregister() can remove them
+        addon_keymaps.extend((km, kmi) for kmi in kmis)
 
     update_panel(None, bpy.context)
 
 
 def unregister():
-    for km,kmi in addon_keymaps:
+    for km, kmi in addon_keymaps:
         km.keymap_items.remove(kmi)
-        addon_keymaps.clear()
+    addon_keymaps.clear()
 
     for cls in reversed(classes):
         bpy.utils.unregister_class(cls)
