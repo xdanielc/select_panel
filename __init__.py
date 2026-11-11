@@ -41,10 +41,6 @@ class VIEW3D_PT_Obj_Select(bpy.types.Panel):
     bl_label = "Select Panel"
     bl_context = "objectmode"
 
-    @classmethod
-    def poll(cls, context):
-        return (context.object is not None)
-
     def draw(self, context):
         layout = self.layout
 
