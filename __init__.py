@@ -146,8 +146,13 @@ class VIEW3D_PT_Mesh_Select(bpy.types.Panel):
         col = layout.column(align=True)
         col.scale_y = 1.3
         row = col.row(align=True)
-        row.operator("mesh.loop_multi_select", text="Loop").ring = False
-        row.operator("mesh.loop_multi_select", text="Ring").ring = True
+        if operator_exists("mesh.select_edge_loop_multi"):
+            # Blender 5.x: mesh.loop_multi_select was split in two operators
+            row.operator("mesh.select_edge_loop_multi", text="Edge Loops")
+            row.operator("mesh.select_edge_ring_multi", text="Edge Rings")
+        else:
+            row.operator("mesh.loop_multi_select", text="Edge Loops").ring = False
+            row.operator("mesh.loop_multi_select", text="Edge Rings").ring = True
         row = col.row(align=True)
         row.operator("mesh.loop_to_region", text="Loop inner region").select_bigger = False
         row.operator("mesh.region_to_loop", text="Boundary Loop")
@@ -306,11 +311,13 @@ def operator_exists(idname):
     a = bpy.ops
     for prop in names:
         a = getattr(a, prop)
-        
+
+    # getattr/repr never fail for unknown operators (the repr is just
+    # "<bpy.ops.x.y function>"), get_rna_type raises KeyError instead
     try:
-        name = a.__repr__()
+        a.get_rna_type()
         return True
-    except:
+    except Exception:
         return False
 
 classes = (
