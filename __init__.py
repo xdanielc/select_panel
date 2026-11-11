@@ -16,7 +16,6 @@
 #
 # ----- END GPL LICENSE BLOCK -----
 
-from bpy.ops import text
 from bpy.props import StringProperty
 from bpy.types import AddonPreferences
 import bpy
