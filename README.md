@@ -4,7 +4,7 @@ This addon is just a few shorctus of the options under the select dropdown menu 
 Using this addon, you can always have those options on a sidebar for quick access and better discoverability.
 It can help everyone, from people learning blender to more advanced  users who want their selections always visible
 
-[DOWNLOAD](https://extensions.blender.org/approval-queue/select-panel-xdanic/) on the Extensions Platform
+[DOWNLOAD](https://extensions.blender.org/add-ons/select-panel-xdanic/) on the Extensions Platform
 
 
 **BlenderArtists.org forum discussion:** https://blenderartists.org/t/select-panel/1200881
